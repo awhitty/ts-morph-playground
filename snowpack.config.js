@@ -32,6 +32,8 @@ module.exports = {
     /* ... */
   },
   buildOptions: {
+    baseUrl: '/ts-morph-playground',
+    metaUrlPath: 'dist',
     sourcemap: true,
     /* ... */
   },
