@@ -1,4 +1,4 @@
-import {useEffect} from "../../_snowpack/pkg/react.js";
+import {useEffect} from "../pkg/react.js";
 export function useLoadTypings(monaco) {
   useEffect(() => {
     async function loadTypings(monaco2) {

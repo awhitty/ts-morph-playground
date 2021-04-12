@@ -1,4 +1,4 @@
-import {useEffect} from "../../_snowpack/pkg/react.js";
+import {useEffect} from "../pkg/react.js";
 import * as simpleTypescript from "../editor/simple_typescript_language.js";
 export function useAddSimpleTypescriptLanguage(monaco) {
   useEffect(() => {

@@ -1,5 +1,5 @@
-import classNames from "../../_snowpack/pkg/classnames.js";
-import React, {useEffect, useRef} from "../../_snowpack/pkg/react.js";
+import classNames from "../pkg/classnames.js";
+import React, {useEffect, useRef} from "../pkg/react.js";
 export function TreeNodeViewer({node, selectedNode}) {
   const ref = useRef(null);
   const isSelected = node === selectedNode;

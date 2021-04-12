@@ -1,7 +1,7 @@
-import {useMonaco} from "../_snowpack/pkg/@monaco-editor/react.js";
-import React, {useEffect, useState} from "../_snowpack/pkg/react.js";
-import SplitPane from "../_snowpack/pkg/react-splitter-layout.js";
-import "../_snowpack/pkg/react-splitter-layout/lib/index.css.proxy.js";
+import {useMonaco} from "./pkg/@monaco-editor/react.js";
+import React, {useEffect, useState} from "./pkg/react.js";
+import SplitPane from "./pkg/react-splitter-layout.js";
+import "./pkg/react-splitter-layout/lib/index.css.proxy.js";
 import "./App.css.proxy.js";
 import {compileModule} from "./compileModule.js";
 import {ErrorOverlay} from "./components/ErrorOverlay.js";

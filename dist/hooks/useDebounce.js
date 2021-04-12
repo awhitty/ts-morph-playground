@@ -1,4 +1,4 @@
-import {useEffect, useState} from "../../_snowpack/pkg/react.js";
+import {useEffect, useState} from "../pkg/react.js";
 export function useDebounce(value, delay = 20) {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {

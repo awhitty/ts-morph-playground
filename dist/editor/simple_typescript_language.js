@@ -1,4 +1,4 @@
-import {languages} from "../../_snowpack/pkg/monaco-editor.js";
+import {languages} from "../pkg/monaco-editor.js";
 export const meta = {
   id: "simple_typescript",
   extensions: [".ts", ".tsx"],

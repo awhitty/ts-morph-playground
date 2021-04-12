@@ -1,5 +1,5 @@
-import useResizeObserver from "../../_snowpack/pkg/@react-hook/resize-observer.js";
-import React from "../../_snowpack/pkg/react.js";
+import useResizeObserver from "../pkg/@react-hook/resize-observer.js";
+import React from "../pkg/react.js";
 export function useSize(target) {
   const [size, setSize] = React.useState();
   React.useLayoutEffect(() => {

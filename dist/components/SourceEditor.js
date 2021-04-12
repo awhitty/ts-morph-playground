@@ -1,5 +1,5 @@
-import Editor from "../../_snowpack/pkg/@monaco-editor/react.js";
-import React, {useEffect, useState} from "../../_snowpack/pkg/react.js";
+import Editor from "../pkg/@monaco-editor/react.js";
+import React, {useEffect, useState} from "../pkg/react.js";
 import {DEFAULT_EDITOR_OPTIONS} from "../constants.js";
 export function SourceEditor({
   value,

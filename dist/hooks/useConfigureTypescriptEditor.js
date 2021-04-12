@@ -1,4 +1,4 @@
-import {useEffect} from "../../_snowpack/pkg/react.js";
+import {useEffect} from "../pkg/react.js";
 export function useConfigureTypescriptEditor(monaco) {
   useEffect(() => {
     if (monaco) {

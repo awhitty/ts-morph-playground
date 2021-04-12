@@ -1,4 +1,4 @@
-import React from "../../_snowpack/pkg/react.js";
+import React from "../pkg/react.js";
 export function ErrorOverlay(props) {
   return /* @__PURE__ */ React.createElement("div", {
     className: "bg-gray-50 absolute font-mono top-0 left-0 right-0 bottom-0 flex items-center justify-center overflow-auto"
