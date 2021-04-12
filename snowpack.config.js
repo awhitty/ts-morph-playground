@@ -5,6 +5,7 @@ module.exports = {
     src: { url: '/dist' },
   },
   plugins: [
+    '@snowpack/plugin-postcss',
     '@snowpack/plugin-react-refresh',
     '@snowpack/plugin-dotenv',
     [
@@ -24,12 +25,14 @@ module.exports = {
     // "bundle": true,
   },
   packageOptions: {
+    polyfillNode: true,
     /* ... */
   },
   devOptions: {
     /* ... */
   },
   buildOptions: {
+    sourcemap: true,
     /* ... */
   },
 };
