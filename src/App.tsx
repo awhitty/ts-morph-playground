@@ -125,8 +125,14 @@ export function App({}: AppProps) {
 
   return (
     <div className="h-screen w-screen flex flex-col">
-      <div className="flex-shrink p-4 border-b-2">
+      <div className="flex flex-shrink p-2 border-b-2 items-baseline">
         <div className="text-lg font-bold">ts-morph-playground</div>
+        <a
+          className="ml-auto text-purple-500 hover:underline"
+          href="https://github.com/awhitty/ts-morph-playground/"
+        >
+          GitHub
+        </a>
       </div>
       <div className="relative h-full w-full">
         <SplitPane percentage>
