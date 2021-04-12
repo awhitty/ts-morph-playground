@@ -277,6 +277,9 @@ video {
 .items-center {
   align-items: center;
 }
+.items-baseline {
+  align-items: baseline;
+}
 .justify-center {
   justify-content: center;
 }
@@ -307,14 +310,17 @@ video {
   font-size: 1.125rem;
   line-height: 1.75rem;
 }
+.ml-auto {
+  margin-left: auto;
+}
 .overflow-auto {
   overflow: auto;
 }
 .p-1 {
   padding: 0.25rem;
 }
-.p-4 {
-  padding: 1rem;
+.p-2 {
+  padding: 0.5rem;
 }
 .pl-6 {
   padding-left: 1.5rem;
@@ -355,6 +361,13 @@ video {
 .text-red-900 {
   --tw-text-opacity: 1;
   color: rgba(127, 29, 29, var(--tw-text-opacity));
+}
+.text-purple-500 {
+  --tw-text-opacity: 1;
+  color: rgba(139, 92, 246, var(--tw-text-opacity));
+}
+.hover\:underline:hover {
+  text-decoration: underline;
 }
 .w-full {
   width: 100%;
