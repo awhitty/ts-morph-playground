@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "@monaco-editor/react": "./@monaco-editor/react.js",
+    "@react-hook/resize-observer": "./@react-hook/resize-observer.js",
+    "classnames": "./classnames.js",
+    "monaco-editor": "./monaco-editor.js",
+    "react": "./react.js",
+    "react-dom": "./react-dom.js",
+    "react-splitter-layout": "./react-splitter-layout.js",
+    "react-splitter-layout/lib/index.css": "./react-splitter-layout/lib/index.css"
+  }
+}
