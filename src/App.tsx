@@ -84,18 +84,21 @@ export function App({}: AppProps) {
 
   useEffect(() => {
     function transform(file: tsm.SourceFile) {
-      const copied = transformedProject.createSourceFile(
-        'transformed',
-        file.getStructure(),
-        { overwrite: true },
-      );
-      const transformerStr = tsm.ts.transpile(debouncedTransformSource, {
-        target: tsm.ScriptTarget.ES5,
-        module: tsm.ModuleKind.CommonJS,
-      });
-
       let transformFn: Function | null = null;
+      let copied: tsm.SourceFile | null = null;
+
       try {
+        copied = transformedProject.createSourceFile(
+          'transformed',
+          file.getStructure(),
+          { overwrite: true },
+        );
+
+        const transformerStr = tsm.ts.transpile(debouncedTransformSource, {
+          target: tsm.ScriptTarget.ES5,
+          module: tsm.ModuleKind.CommonJS,
+        });
+
         transformFn = (compileModule(
           transformerStr,
           {},
@@ -105,16 +108,16 @@ export function App({}: AppProps) {
         console.error(e);
       }
 
-      if (transformFn) {
+      if (transformFn && copied) {
         try {
           transformFn(copied);
           setError(null);
         } catch (e) {
           setError(e);
         }
-      }
 
-      setTransformedModel(copied.getText());
+        setTransformedModel(copied.getText());
+      }
     }
 
     const file = inputSourceFile?.node;
