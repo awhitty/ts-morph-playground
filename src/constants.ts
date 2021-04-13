@@ -17,18 +17,20 @@ export var foo = 'some string';
 `.trim();
 
 export const INITIAL_TRANSFORM = `
-import {SourceFile, SyntaxKind, VariableDeclarationKind} from 'ts-morph';
+import { Project, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
-export default function transform(file: SourceFile) {
-  const variableStatements = file.getDescendantsOfKind(
-    SyntaxKind.VariableStatement,
-  );
+export default function transform(project: Project) {
+  project.getSourceFiles().forEach((file) => {
+    const variableStatements = file.getDescendantsOfKind(
+      SyntaxKind.VariableStatement,
+    );
 
-  variableStatements.forEach((variableStatement) => {
-    const declarationKind = variableStatement.getDeclarationKind();
-    if (declarationKind === VariableDeclarationKind.Var) {
-      variableStatement.setDeclarationKind(VariableDeclarationKind.Const);
-    }
+    variableStatements.forEach((variableStatement) => {
+      const declarationKind = variableStatement.getDeclarationKind();
+      if (declarationKind === VariableDeclarationKind.Var) {
+        variableStatement.setDeclarationKind(VariableDeclarationKind.Const);
+      }
+    });
   });
 };
 `.trim();

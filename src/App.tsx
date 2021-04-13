@@ -5,11 +5,12 @@ import 'react-splitter-layout/lib/index.css';
 import './App.css';
 import { compileModule } from './compileModule';
 import { ErrorOverlay } from './components/ErrorOverlay';
-import { SourceEditor } from './components/SourceEditor';
-import { TransformedCodeViewer } from './components/TransformedCodeViewer';
-import { TransformSourceEditor } from './components/TransformSourceEditor';
+import {
+  EditorModel,
+  FancyTypescriptEditor,
+} from './components/FancyTypescriptEditor';
 import { TreeNodeViewer } from './components/TreeNodeViewer';
-import { INITIAL_SOURCE, INITIAL_TRANSFORM } from './constants';
+import { INITIAL_TRANSFORM } from './constants';
 import { darkTheme } from './editor/dark_theme';
 import { useAddSimpleTypescriptLanguage } from './hooks/useAddSimpleTypescriptLanguage';
 import { useConfigureTypescriptEditor } from './hooks/useConfigureTypescriptEditor';
@@ -22,35 +23,33 @@ const sourceProject = new tsm.Project({
   useInMemoryFileSystem: true,
 });
 
-const transformedProject = new tsm.Project({
-  useInMemoryFileSystem: true,
-});
-
 interface AppProps {}
 
-export function App({}: AppProps) {
-  const [inputSource, setInputSource] = useState<string>(
-    localStorage.getItem('inputSource') ?? INITIAL_SOURCE,
-  );
-  const debouncedInputSource = useDebounce(inputSource, 50);
-  const [inputSourceFile, setInputSourceFile] = useState<
-    { node: tsm.SourceFile } | undefined
-  >();
-  const [cursorOffset, setCursorOffset] = useState<number | null>(null);
-  const [selectedNode, setSelectedNode] = useState<tsm.Node | null>(null);
+const INTIAL_INPUT_MODELS = [
+  {
+    path: 'foo.ts',
+    content: `
+export function foo(str: string): number {
+  var someVar = 'Hello, '
+  return (someVar + str).length;
+}
+    `.trim(),
+  },
+  {
+    path: 'bar.ts',
+    content: `
+import { foo } from './foo';
 
-  const [transformSource, setTransformSource] = useState<string>(
-    localStorage.getItem('transformSource') ?? INITIAL_TRANSFORM,
-  );
-  const debouncedTransformSource = useDebounce(transformSource, 50);
-  const [transformedModel, setTransformedModel] = useState<
-    string | undefined
-  >();
-  const [error, setError] = useState<Error | null>(null);
-  const prefersDarkMode = usePrefersDarkMode();
+var result = foo('world!');
+    `.trim(),
+  },
+];
 
-  const monaco = useMonaco();
+const INITIAL_TRANSFORM_MODELS = [
+  { path: 'transform.ts', content: INITIAL_TRANSFORM },
+];
 
+function useDarkModeClassName(prefersDarkMode: boolean) {
   useEffect(() => {
     if (prefersDarkMode) {
       document.body.classList.add('dark');
@@ -58,6 +57,49 @@ export function App({}: AppProps) {
       document.body.classList.remove('dark');
     }
   }, [prefersDarkMode]);
+}
+
+type WrappedSourceFile = {
+  node: tsm.SourceFile;
+};
+
+export function App({}: AppProps) {
+  const localInputModels = localStorage.getItem('inputModels');
+  const localTransformModels = localStorage.getItem('transformModels');
+
+  const [inputModels, setInputModels] = useState<EditorModel[]>(
+    localInputModels ? JSON.parse(localInputModels) : INTIAL_INPUT_MODELS,
+  );
+
+  const [transformModels, setTransformModels] = useState<EditorModel[]>(
+    localTransformModels
+      ? JSON.parse(localTransformModels)
+      : INITIAL_TRANSFORM_MODELS,
+  );
+
+  const [transformedModels, setTransformedModels] = useState<EditorModel[]>([]);
+
+  const debouncedInputModels = useDebounce(inputModels, 50);
+
+  const [
+    selectedInputFile,
+    setSelectedInputFile,
+  ] = useState<WrappedSourceFile>();
+  const [cursorOffsetInInputFile, setCursorOffsetInInputFile] = useState<
+    number | null
+  >(null);
+
+  const [selectedNode, setSelectedNode] = useState<tsm.Node | null>(null);
+  const debouncedTransformSource = useDebounce(transformModels, 50);
+  const [error, setError] = useState<Error | null>(null);
+
+  const prefersDarkMode = usePrefersDarkMode();
+  useDarkModeClassName(prefersDarkMode);
+
+  const [selectedModelPath, setSelectedModelPath] = useState(
+    inputModels[0].path,
+  );
+  const monaco = useMonaco();
 
   useEffect(() => {
     if (monaco) {
@@ -69,49 +111,58 @@ export function App({}: AppProps) {
   useAddSimpleTypescriptLanguage(monaco);
   useConfigureTypescriptEditor(monaco);
 
-  function setInputSourceAndPersist(newSource: string) {
-    setInputSource(newSource);
-    localStorage.setItem('inputSource', newSource);
+  function setInputModelsAndPersist(models: EditorModel[]) {
+    setInputModels(models);
+    localStorage.setItem('inputModels', JSON.stringify(models));
   }
 
-  function setTransformSourceAndPersist(newSource: string) {
-    setTransformSource(newSource);
-    localStorage.setItem('transformSource', newSource);
+  function setTransformModelsAndPersist(models: EditorModel[]) {
+    setTransformModels(models);
+    localStorage.setItem('transformModels', JSON.stringify(models));
   }
 
   useEffect(() => {
-    const file = sourceProject.createSourceFile(
-      'input.ts',
-      debouncedInputSource,
-      {
-        overwrite: true,
-      },
+    const debouncedSelectedInput = debouncedInputModels.find(
+      (m) => m.path === selectedModelPath,
     );
+    if (debouncedSelectedInput) {
+      const file = sourceProject.createSourceFile(
+        debouncedSelectedInput.path,
+        debouncedSelectedInput.content,
+        {
+          overwrite: true,
+        },
+      );
 
-    setInputSourceFile({ node: file });
-  }, [debouncedInputSource]);
+      setSelectedInputFile({ node: file });
+    }
+  }, [debouncedInputModels, selectedModelPath]);
 
   useEffect(() => {
-    if (inputSourceFile && cursorOffset) {
+    if (selectedInputFile && cursorOffsetInInputFile) {
       setSelectedNode(
-        inputSourceFile.node.getDescendantAtPos(cursorOffset) ?? null,
+        selectedInputFile.node.getDescendantAtPos(cursorOffsetInInputFile) ??
+          null,
       );
     }
-  }, [inputSourceFile, cursorOffset]);
+  }, [selectedInputFile, cursorOffsetInInputFile]);
 
   useEffect(() => {
-    function transform(file: tsm.SourceFile) {
+    function transform(models: EditorModel[]) {
+      const transformedProject = new tsm.Project({
+        useInMemoryFileSystem: true,
+      });
+
       let transformFn: Function | null = null;
-      let copied: tsm.SourceFile | null = null;
 
       try {
-        copied = transformedProject.createSourceFile(
-          'transformed',
-          file.getText(),
-          { overwrite: true },
-        );
+        models.forEach((model) => {
+          transformedProject.createSourceFile(model.path, model.content);
+        });
 
-        const transformerStr = tsm.ts.transpile(debouncedTransformSource, {
+        const transformSource = debouncedTransformSource[0].content ?? '';
+
+        const transformerStr = tsm.ts.transpile(transformSource, {
           target: tsm.ScriptTarget.ES5,
           module: tsm.ModuleKind.CommonJS,
         });
@@ -125,23 +176,25 @@ export function App({}: AppProps) {
         console.error(e);
       }
 
-      if (transformFn && copied) {
+      if (transformFn) {
         try {
-          transformFn(copied);
+          transformFn(transformedProject);
           setError(null);
         } catch (e) {
           setError(e);
         }
 
-        setTransformedModel(copied.getText());
+        setTransformedModels(
+          transformedProject.getSourceFiles().map((file) => ({
+            path: `transformed${file.getFilePath()}`,
+            content: file.getText(),
+          })),
+        );
       }
     }
 
-    const file = inputSourceFile?.node;
-    if (file) {
-      transform(file);
-    }
-  }, [debouncedTransformSource, inputSourceFile]);
+    transform(debouncedInputModels);
+  }, [debouncedTransformSource, debouncedInputModels]);
 
   const editorTheme = prefersDarkMode ? darkTheme.name : 'vs-light';
 
@@ -150,7 +203,7 @@ export function App({}: AppProps) {
       <div className="flex flex-shrink px-6 py-4 border-b-4 dark:border-gray-700 items-baseline">
         <div className="text-lg font-bold">ts-morph-playground</div>
         <a
-          className="ml-auto px-2 py-1 bg-gray-800 rounded hover:bg-gray-700"
+          className="ml-auto px-2 py-1 rounded text-gray-700 bg-gray-300 hover:text-gray-800 hover:bg-gray-400 dark:text-gray-50 dark:bg-gray-800 dark:hover:text-gray-50 dark:hover:bg-gray-700"
           href="https://github.com/awhitty/ts-morph-playground/"
         >
           GitHub
@@ -159,33 +212,40 @@ export function App({}: AppProps) {
       <div className="relative h-full w-full">
         <SplitPane percentage>
           <SplitPane percentage vertical>
-            <SourceEditor
-              value={inputSource}
+            <FancyTypescriptEditor
               theme={editorTheme}
-              onModelChange={(model) => setInputSourceAndPersist(model ?? '')}
-              onCursorOffsetChange={setCursorOffset}
+              models={inputModels}
+              selectedModelPath={selectedModelPath}
+              onChangeModels={setInputModelsAndPersist}
+              onSelectModel={setSelectedModelPath}
+              onChangeCursorOffset={setCursorOffsetInInputFile}
             />
-            <TransformSourceEditor
-              value={transformSource}
+            <FancyTypescriptEditor
               theme={editorTheme}
-              onModelChange={(model) =>
-                setTransformSourceAndPersist(model ?? '')
-              }
+              models={transformModels}
+              selectedModelPath={transformModels[0].path}
+              onChangeModels={setTransformModelsAndPersist}
+              shouldShowTabBar={false}
             />
           </SplitPane>
           <SplitPane percentage vertical>
-            {inputSourceFile && (
+            {selectedInputFile && (
               <TreeNodeViewer
-                node={inputSourceFile.node}
+                node={selectedInputFile.node}
                 selectedNode={selectedNode}
               />
             )}
             {error ? (
               <ErrorOverlay error={error} />
             ) : (
-              <TransformedCodeViewer
+              <FancyTypescriptEditor
                 theme={editorTheme}
-                transformedSource={transformedModel ?? ''}
+                models={transformedModels}
+                selectedModelPath={'transformed/' + selectedModelPath}
+                onSelectModel={(path) =>
+                  setSelectedModelPath(path.replace('transformed/', ''))
+                }
+                readOnly
               />
             )}
           </SplitPane>
