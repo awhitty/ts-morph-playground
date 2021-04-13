@@ -15,6 +15,7 @@
     "@snowpack/plugin-postcss": "^1.2.2",
     "@types/classnames": "^2.2.11",
     "@types/react-splitter-layout": "^3.0.1",
+    "@types/tailwindcss": "^2.0.2",
     "autoprefixer": "^10.2.5",
     "classnames": "^2.3.1",
     "gh-pages": "^3.1.0",

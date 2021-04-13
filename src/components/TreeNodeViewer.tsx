@@ -21,8 +21,8 @@ export function TreeNodeViewer({ node, selectedNode }: TreeNodeViewerProps) {
     <div>
       <div
         ref={ref}
-        className={classNames('inline-flex p-1 rounded', {
-          'bg-pink-200 font-bold': isSelected,
+        className={classNames('inline-flex p-1 rounded font-mono text-sm', {
+          'font-bold bg-pink-200 dark:bg-pink-800': isSelected,
         })}
       >
         {node.getKindName()}

@@ -5,12 +5,14 @@ import { DEFAULT_EDITOR_OPTIONS } from '../constants';
 
 interface SourceEditorProps {
   value: string;
+  theme: string;
   onModelChange: (model: string | undefined) => void;
   onCursorOffsetChange: (offset: number | null) => void;
 }
 
 export function SourceEditor({
   value,
+  theme,
   onCursorOffsetChange,
   onModelChange,
 }: SourceEditorProps) {
@@ -35,6 +37,7 @@ export function SourceEditor({
     <Editor
       defaultValue={value}
       path="test.ts"
+      theme={theme}
       language="simple_typescript"
       options={DEFAULT_EDITOR_OPTIONS}
       onChange={onModelChange}

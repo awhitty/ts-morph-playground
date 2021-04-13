@@ -6,6 +6,10 @@ export const DEFAULT_EDITOR_OPTIONS: editor.IStandaloneEditorConstructionOptions
   fixedOverflowWidgets: true,
   folding: false,
   codeLens: false,
+  fontSize: 14,
+  fontFamily:
+    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+  lineHeight: 28,
 };
 
 export const INITIAL_SOURCE = `

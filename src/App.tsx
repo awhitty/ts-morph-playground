@@ -10,10 +10,12 @@ import { TransformedCodeViewer } from './components/TransformedCodeViewer';
 import { TransformSourceEditor } from './components/TransformSourceEditor';
 import { TreeNodeViewer } from './components/TreeNodeViewer';
 import { INITIAL_SOURCE, INITIAL_TRANSFORM } from './constants';
+import { darkTheme } from './editor/dark_theme';
 import { useAddSimpleTypescriptLanguage } from './hooks/useAddSimpleTypescriptLanguage';
 import { useConfigureTypescriptEditor } from './hooks/useConfigureTypescriptEditor';
 import { useDebounce } from './hooks/useDebounce';
 import { useLoadTypings } from './hooks/useLoadTypings';
+import { usePrefersDarkMode } from './hooks/usePrefersDarkMode';
 import { tsm } from './lib/ts-morph';
 
 const sourceProject = new tsm.Project({
@@ -45,8 +47,23 @@ export function App({}: AppProps) {
     string | undefined
   >();
   const [error, setError] = useState<Error | null>(null);
+  const prefersDarkMode = usePrefersDarkMode();
 
   const monaco = useMonaco();
+
+  useEffect(() => {
+    if (prefersDarkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, [prefersDarkMode]);
+
+  useEffect(() => {
+    if (monaco) {
+      monaco.editor.defineTheme(darkTheme.name, darkTheme.theme);
+    }
+  }, [monaco]);
 
   useLoadTypings(monaco);
   useAddSimpleTypescriptLanguage(monaco);
@@ -126,12 +143,14 @@ export function App({}: AppProps) {
     }
   }, [debouncedTransformSource, inputSourceFile]);
 
+  const editorTheme = prefersDarkMode ? darkTheme.name : 'vs-light';
+
   return (
     <div className="h-screen w-screen flex flex-col">
-      <div className="flex flex-shrink p-2 border-b-2 items-baseline">
+      <div className="flex flex-shrink px-6 py-4 border-b-4 dark:border-gray-700 items-baseline">
         <div className="text-lg font-bold">ts-morph-playground</div>
         <a
-          className="ml-auto text-purple-500 hover:underline"
+          className="ml-auto px-2 py-1 bg-gray-800 rounded hover:bg-gray-700"
           href="https://github.com/awhitty/ts-morph-playground/"
         >
           GitHub
@@ -142,11 +161,13 @@ export function App({}: AppProps) {
           <SplitPane percentage vertical>
             <SourceEditor
               value={inputSource}
+              theme={editorTheme}
               onModelChange={(model) => setInputSourceAndPersist(model ?? '')}
               onCursorOffsetChange={setCursorOffset}
             />
             <TransformSourceEditor
               value={transformSource}
+              theme={editorTheme}
               onModelChange={(model) =>
                 setTransformSourceAndPersist(model ?? '')
               }
@@ -163,6 +184,7 @@ export function App({}: AppProps) {
               <ErrorOverlay error={error} />
             ) : (
               <TransformedCodeViewer
+                theme={editorTheme}
                 transformedSource={transformedModel ?? ''}
               />
             )}
