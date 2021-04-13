@@ -90,7 +90,7 @@ export function App({}: AppProps) {
       try {
         copied = transformedProject.createSourceFile(
           'transformed',
-          file.getStructure(),
+          file.getText(),
           { overwrite: true },
         );
 
