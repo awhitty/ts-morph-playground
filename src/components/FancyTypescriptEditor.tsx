@@ -5,6 +5,8 @@ import type { editor } from 'monaco-editor';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_EDITOR_OPTIONS } from '../constants';
 import { useFocusWithin } from '@react-aria/interactions';
+import { Link, X } from 'react-feather';
+import { ErrorOverlay } from './ErrorOverlay';
 
 export interface EditorModel {
   path: string;
@@ -17,6 +19,8 @@ interface FancyTypescriptEditorProps {
   selectedModelPath: string;
   shouldShowTabBar?: boolean;
   readOnly?: boolean;
+  status?: 'pending' | 'current';
+  error?: Error | null;
   onSelectModel?: (path: string) => void;
   onChangeModels?: (models: EditorModel[]) => void;
   onChangeCursorOffset?: (offset: number | null) => void;
@@ -25,6 +29,8 @@ interface FancyTypescriptEditorProps {
 export function FancyTypescriptEditor({
   models,
   theme,
+  status,
+  error,
   readOnly = false,
   shouldShowTabBar = true,
   selectedModelPath,
@@ -53,7 +59,7 @@ export function FancyTypescriptEditor({
     }
 
     shouldUpdateModelLanguages.current = true;
-  }, [monaco]);
+  }, [monaco, models]);
 
   const handleBlur = useCallback(() => {
     if (monaco && shouldUpdateModelLanguages.current) {
@@ -70,7 +76,7 @@ export function FancyTypescriptEditor({
       // Maybe there's a better way?
       monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({});
     }
-  }, [monaco]);
+  }, [monaco, models]);
 
   const { focusWithinProps } = useFocusWithin({
     onFocusWithin: handleFocus,
@@ -109,41 +115,74 @@ export function FancyTypescriptEditor({
   }
 
   return (
-    <div className="flex flex-col w-full h-full" {...focusWithinProps}>
+    <div className="flex flex-col w-full h-full relative" {...focusWithinProps}>
       {shouldShowTabBar && (
-        <div className="flex flex-row space-x-1 px-2 pt-1 pb-0 text-sm border-b-2 dark:border-gray-800">
+        <div className="flex flex-row text-sm border-b-2 dark:border-gray-800">
+          <div style={{ width: 46 }} className="flex justify-center">
+            <span
+              className={classNames(
+                'flex h-2 w-2 relative self-center transition-transform transform',
+                {
+                  'scale-0': status !== 'pending',
+                },
+              )}
+            >
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-300 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400" />
+            </span>
+          </div>
           {models.map((model) => {
             const isSelected = selectedModelPath === model.path;
             return (
-              <button
-                key={model.path}
-                className={classNames('p-1 px-2 rounded-t focus:ring-2', {
-                  'text-gray-600 dark:text-gray-300': !isSelected,
-                  'text-gray-800 bg-gray-200 dark:text-gray-50 dark:bg-gray-800': isSelected,
-                })}
-                onClick={() => {
-                  if (onSelectModel) {
-                    onSelectModel(model.path);
-                    shouldUpdateModelLanguages.current = false;
-                    editor?.focus();
-                  }
-                }}
-              >
-                {model.path}
-              </button>
+              <div key={model.path} className="flex align-baseline">
+                <button
+                  className={classNames('p-1 px-2 focus:outline-none', {
+                    'text-gray-600 dark:text-gray-300 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100': !isSelected,
+                    'text-gray-800 bg-gray-200 dark:text-gray-50 dark:bg-gray-800': isSelected,
+                  })}
+                  onClick={() => {
+                    if (onSelectModel) {
+                      onSelectModel(model.path);
+                      shouldUpdateModelLanguages.current = false;
+                      editor?.focus();
+                    }
+                  }}
+                >
+                  {model.path}
+                </button>
+                {false && (
+                  <button
+                    className="p-1 px-2 focus:outline-none text-gray-600 dark:text-gray-300 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-900 dark:hover:text-gray-100"
+                    onClick={() => {
+                      if (onSelectModel) {
+                        onSelectModel(model.path);
+                        shouldUpdateModelLanguages.current = false;
+                        editor?.focus();
+                      }
+                    }}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
       )}
       <div className="flex-grow overflow-auto relative">
-        <Editor
-          path={selectedModelPath}
-          value={selectedModel?.content ?? ''}
-          theme={theme}
-          options={{ ...DEFAULT_EDITOR_OPTIONS, readOnly }}
-          onChange={(content) => changeSelectedModel(content ?? '')}
-          onMount={setEditor}
-        />
+        {selectedModel ? (
+          <Editor
+            path={selectedModelPath}
+            value={selectedModel.content}
+            theme={theme}
+            options={{ ...DEFAULT_EDITOR_OPTIONS, readOnly }}
+            onChange={(content) => changeSelectedModel(content ?? '')}
+            onMount={setEditor}
+          />
+        ) : (
+          <div />
+        )}
+        {error && <ErrorOverlay error={error} />}
       </div>
     </div>
   );

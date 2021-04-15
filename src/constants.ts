@@ -12,10 +12,6 @@ export const DEFAULT_EDITOR_OPTIONS: editor.IStandaloneEditorConstructionOptions
   lineHeight: 28,
 };
 
-export const INITIAL_SOURCE = `
-export var foo = 'some string';
-`.trim();
-
 export const INITIAL_TRANSFORM = `
 import { Project, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
@@ -32,5 +28,5 @@ export default function transform(project: Project) {
       }
     });
   });
-};
+}
 `.trim();
